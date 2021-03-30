@@ -9,7 +9,7 @@ import java.util.concurrent.RecursiveTask;
 
 public class fileScannerWorker extends RecursiveTask<Map<String, Integer>> {
 
-
+    private static int id = 0;
     private volatile int start;
     private volatile int end;
     private File[] corpus;
@@ -17,6 +17,7 @@ public class fileScannerWorker extends RecursiveTask<Map<String, Integer>> {
 
     public fileScannerWorker(File[] corpus, int start, int end) {
 
+        System.out.println("thread "+id++);
         this.corpus = corpus;
         this.start = start;
         this.end = end;
@@ -46,35 +47,35 @@ public class fileScannerWorker extends RecursiveTask<Map<String, Integer>> {
             else
                 System.out.println("File " + "'"+corpus[i].getName()+"'" + " is not readable");
         }
-        System.out.println("usao");
         fileScannerWorker right = new fileScannerWorker(corpus,newStart,end);
         right.fork();
-        Map<String, Integer> leftResult  = null;
-        try {
-            leftResult = calculate(thisThreadEnd);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
+        Map<String, Integer> leftResult  = calculate(thisThreadEnd);
         Map<String, Integer> rightResult = right.join();
         return mergeMaps(leftResult,rightResult);
 
     }
 
-    private Map<String, Integer> calculate(int end) throws FileNotFoundException {
+    private Map<String, Integer> calculate(int end)  {
         for(int j = start;j<=end;j++){
             if(corpus[j].isFile()&&corpus[j].getName().endsWith(".txt"))
             {
-                Scanner file=new Scanner (corpus[j]);
-                //file.skip("(\r\n|[\n\r\u2028\u2029\u0085])?");
-                while(file.hasNext()){
-                    String word=file.next().toLowerCase();
-                    if(result.containsKey(word)){
-                        result.put(word, result.get(word)+1);
-                    }
-
+                Scanner file= null;
+                try {
+                    file = new Scanner(corpus[j]);
+                } catch (FileNotFoundException e) {
+                    System.out.println("File " + "'"+corpus[j].getName()+"'" + " is not readable");
                 }
-                file.close();
+                if(file!=null){
+                    while(file.hasNext()){
+                        String word=file.next().replaceAll("[^a-zA-Z]","").toLowerCase();
+                        if(result.containsKey(word)){
+                            result.put(word, result.get(word)+1);
+                        }
+
+                    }
+                    file.close();
+                }
+
             }
         }
         return result;
@@ -85,9 +86,5 @@ public class fileScannerWorker extends RecursiveTask<Map<String, Integer>> {
         for (Map.Entry<String, Integer> e : map2.entrySet())
             map3.merge(e.getKey(), e.getValue(), Integer::sum);
         return map3;
-    }
-
-    public Map<String, Integer> getResult() {
-        return result;
     }
 }
