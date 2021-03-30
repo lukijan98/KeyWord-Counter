@@ -8,14 +8,10 @@ public class DirectoryCrawlerWorker implements Runnable {
 
     private HashMap<File,Long> filesLastModifedMap;
     private LinkedBlockingQueue<String> pathsToScan;
-    private String file_corpus_prefix;
-    private long dir_crawler_sleep_time;
 
-    public DirectoryCrawlerWorker(LinkedBlockingQueue<String> pathsToScan, String file_corpus_prefix, long dir_crawler_sleep_time) {
+    public DirectoryCrawlerWorker(LinkedBlockingQueue<String> pathsToScan) {
         this.filesLastModifedMap = new HashMap<>();
         this.pathsToScan = pathsToScan;
-        this.file_corpus_prefix = file_corpus_prefix;
-        this.dir_crawler_sleep_time = dir_crawler_sleep_time;
     }
 
     @Override
@@ -29,22 +25,26 @@ public class DirectoryCrawlerWorker implements Runnable {
                 {
                     String path = pathsToScan.poll();
                     File directory = new File(path);
-                    crawlDirectories(directory);
+                    try {
+                        crawlDirectories(directory);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     pathsToScan.add(path);
                 }
             }
             try {
-                Thread.sleep(dir_crawler_sleep_time);
+                Thread.sleep(PropertyConstants.dir_crawler_sleep_time);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void crawlDirectories(File file){
+    private void crawlDirectories(File file) throws InterruptedException {
         if(file.isDirectory())
         {
-            if(file.getName().startsWith(file_corpus_prefix))
+            if(file.getName().startsWith(PropertyConstants.file_corpus_prefix))
             {
                 if(checkDirectory(file))
                     createJob(file);
@@ -61,10 +61,14 @@ public class DirectoryCrawlerWorker implements Runnable {
         }
     }
 
-    private void createJob(File file){
-        File[] files = file.listFiles();
-        for(File f:files)
-            System.out.println(f.getName());
+    private void createJob(File file) throws InterruptedException {
+//        File[] files = file.listFiles();
+//        for(File f:files)
+//        {
+//            System.out.println(f.getName());
+//        }
+        Main.jobQueue.put(new JobObject(file));
+
     }
 
     private boolean checkDirectory(File file){
