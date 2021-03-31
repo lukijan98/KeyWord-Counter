@@ -30,7 +30,7 @@ public class JobObject implements ScanningJob{
         if(type.equals(ScanType.WEB))
             return url;
         if(type.equals(ScanType.FILE))
-            return corpus.getPath();
+            return corpus.getName();
         return null;
     }
 

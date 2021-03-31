@@ -9,25 +9,45 @@ public class Main {
 
     public static final ForkJoinPool fileScannerThreadPool ;
     public static final ExecutorService webScannerThreadPool;
-    public static final BlockingQueue<JobObject> jobQueue;
+    public static final ExecutorService resultRetrieverThreadPool;
+    public static final BlockingQueue<ScanningJob> jobQueue;
 
 
     static {
         webScannerThreadPool = Executors.newCachedThreadPool();
         fileScannerThreadPool = new ForkJoinPool();
-        jobQueue = new LinkedBlockingQueue<JobObject>();
+        resultRetrieverThreadPool = Executors.newCachedThreadPool();
+        jobQueue = new LinkedBlockingQueue<ScanningJob>();
     }
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
-        File directoryPath = new File("example/data2/subdir/corpus_mcfly");
-        fileScannerWorker fsw = new fileScannerWorker(directoryPath.listFiles(),0,directoryPath.listFiles().length-1);
-        Future<Map<String,Integer>> mapa1 = fileScannerThreadPool.submit(fsw);
-
-        Map<String,Integer> mapa = mapa1.get();
+        File directoryPath = new File("example");
+        LinkedBlockingQueue<String> pathsToScan = new LinkedBlockingQueue<>();
+        pathsToScan.add("example");
+        ResultRetriever resultRetriever = new ResultRetrieverImpl();
+        Thread jobDispatcher = new Thread(new JobDispatcherWorker(resultRetriever));
+        jobDispatcher.start();
+        Thread directoryCrawler = new Thread(new DirectoryCrawlerWorker(pathsToScan));
+        directoryCrawler.start();
+//        fileScannerWorker fsw = new fileScannerWorker(directoryPath.listFiles(),0,directoryPath.listFiles().length-1);
+//        Future<Map<String,Integer>> mapa1 = fileScannerThreadPool.submit(fsw);
+        Thread.sleep(5000);
+        Map<String,Integer> mapa  =resultRetriever.getResult("FILE|corpus_mcfly");
         for( Map.Entry<String, Integer> entry : mapa.entrySet() ){
             System.out.println( entry.getKey() + " => " + entry.getValue() );
         }
+        Map<String, Map<String, Integer>> mapa1  =resultRetriever.getSummary(ScanType.FILE);
+        for( Map.Entry<String, Map<String, Integer>> entry : mapa1.entrySet() ){
+            System.out.println( entry.getKey() );
+            for( Map.Entry<String, Integer> entry1 : entry.getValue().entrySet() ){
+                System.out.println( entry1.getKey() + " => " + entry1.getValue());
+            }
+        }
+//        System.out.println(fileScannerThreadPool.getStealCount());
+//        Thread.sleep(15000);
+//        webScannerThreadPool.shutdown();
+//        fileScannerThreadPool.shutdown();
 //        for(String s:PropertyConstants.keywords)
 //            System.out.println(s);
 //        //System.out.println(keywords[2]);

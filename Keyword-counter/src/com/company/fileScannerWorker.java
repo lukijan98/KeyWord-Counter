@@ -9,7 +9,7 @@ import java.util.concurrent.RecursiveTask;
 
 public class fileScannerWorker extends RecursiveTask<Map<String, Integer>> {
 
-    private static int id = 0;
+
     private volatile int start;
     private volatile int end;
     private File[] corpus;
@@ -17,7 +17,7 @@ public class fileScannerWorker extends RecursiveTask<Map<String, Integer>> {
 
     public fileScannerWorker(File[] corpus, int start, int end) {
 
-        System.out.println("thread "+id++);
+
         this.corpus = corpus;
         this.start = start;
         this.end = end;
