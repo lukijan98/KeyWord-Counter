@@ -10,5 +10,5 @@ public interface ResultRetriever {
     public void clearSummary(ScanType summaryType);
     public Map<String, Map<String, Integer>> getSummary(ScanType summaryType);
     public Map<String, Map<String, Integer>> querySummary(ScanType summaryType);
-    public void addCorpusResult(String corpusName, Future<Map<String, Integer>> corpusResult);
+    public void addCorpusResult(String corpusName, Future<Map<String, Integer>> corpusResult, ScanType summaryType);
 }

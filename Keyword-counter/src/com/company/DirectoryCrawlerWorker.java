@@ -62,13 +62,7 @@ public class DirectoryCrawlerWorker implements Runnable {
     }
 
     private void createJob(File file) throws InterruptedException {
-//        File[] files = file.listFiles();
-//        for(File f:files)
-//        {
-//            System.out.println(f.getName());
-//        }
         Main.jobQueue.put(new JobObject(file));
-
     }
 
     private boolean checkDirectory(File file){

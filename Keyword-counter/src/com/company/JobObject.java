@@ -9,10 +9,13 @@ public class JobObject implements ScanningJob{
     private ScanType type;
     private String url;
     private File corpus;
+    private boolean poison;
+    private int jumpsLeft;
 
-    public JobObject(String url) {
+    public JobObject(String url,int jumpsLeft) {
         this.type = ScanType.WEB;
         this.url = url;
+        this.jumpsLeft = jumpsLeft;
     }
 
     public JobObject(File corpus){
@@ -37,7 +40,7 @@ public class JobObject implements ScanningJob{
     @Override
     public Future<Map<String, Integer>> initiate() {
         if(type.equals(ScanType.WEB))
-            return Main.webScannerThreadPool.submit(new webScannerWorker(url));
+            return Main.webScannerThreadPool.submit(new webScannerWorker(url,jumpsLeft));
         if(type.equals(ScanType.FILE))
             return Main.fileScannerThreadPool.submit(new fileScannerWorker(corpus.listFiles(),0,corpus.listFiles().length-1));
 

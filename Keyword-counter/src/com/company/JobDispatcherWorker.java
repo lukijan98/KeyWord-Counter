@@ -3,11 +3,7 @@ package com.company;
 
 public class JobDispatcherWorker implements Runnable {
 
-    private ResultRetriever resultRetriever;
 
-    public JobDispatcherWorker(ResultRetriever resultRetriever) {
-        this.resultRetriever = resultRetriever;
-    }
 
     @Override
     public void run() {
@@ -15,8 +11,13 @@ public class JobDispatcherWorker implements Runnable {
         {
             try {
                 ScanningJob job = Main.jobQueue.take();
-                System.out.println("Dispatcher took "+job.getQuery());
-                resultRetriever.addCorpusResult(job.getQuery(), job.initiate());
+                if(job.getType().equals(ScanType.WEB))
+                {
+                    if(!((ResultRetrieverImpl)Main.resultRetriever).isUrlInCorpus(job.getQuery()))
+                        Main.resultRetriever.addCorpusResult(job.getQuery(), job.initiate(),job.getType());
+                }
+                else
+                    Main.resultRetriever.addCorpusResult(job.getQuery(), job.initiate(),job.getType());
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
