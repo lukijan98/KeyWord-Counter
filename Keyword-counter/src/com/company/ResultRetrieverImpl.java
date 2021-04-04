@@ -11,30 +11,32 @@ public class ResultRetrieverImpl implements ResultRetriever{
     private Map<String, Future<Map<String, Integer>>> webCorpuses;
     private Future<Map<String, Map<String, Integer>>> fileSummary;
     private Future<Map<String, Map<String, Integer>>> webSummary;
+    private static long resetTime;
 
     public ResultRetrieverImpl(){
         this.fileCorpuses = new ConcurrentHashMap<String, Future<Map<String, Integer>>>();
         this.webCorpuses  = new ConcurrentHashMap<String, Future<Map<String, Integer>>>();
         this.fileSummary  = null;
         this.webSummary   = null;
+        this.resetTime = System.currentTimeMillis();
     }
 
     @Override
     public Map<String, Integer> getResult(String query) {
         String[] splittedQuery = query.split("\\|");
-        ScanType scanType = ScanType.valueOf(splittedQuery[0]);
-
+        ScanType scanType = ScanType.valueOf(splittedQuery[0].trim().toUpperCase());
         Map<String, Future<Map<String, Integer>>> requestedCorpus = null;
         if (scanType.equals(ScanType.WEB)){
             requestedCorpus = webCorpuses;
-        }
+        }else
         if (scanType.equals(ScanType.FILE)){
             requestedCorpus = fileCorpuses;
         }
-        if(requestedCorpus.containsKey(splittedQuery[1]))
+
+        if(requestedCorpus.containsKey(splittedQuery[1].trim()))
         {
             try {
-                return requestedCorpus.get(splittedQuery[1]).get();
+                return requestedCorpus.get(splittedQuery[1].trim()).get();
             } catch (InterruptedException e) {
 
             } catch (ExecutionException e) {
@@ -42,35 +44,38 @@ public class ResultRetrieverImpl implements ResultRetriever{
             }
         }
         else
-            System.out.println(splittedQuery[1]+" does not exist in the corpuses");
+            System.out.println(splittedQuery[1].trim()+" does not exist in the corpuses");
         return null;
     }
 
     @Override
     public Map<String, Integer> queryResult(String query) {
-        ScanType scanType = ScanType.valueOf(query.split("|")[0]);
+        String[] splittedQuery = query.split("\\|");
+        ScanType scanType = ScanType.valueOf(splittedQuery[0].trim().toUpperCase());;
+
         Map<String, Future<Map<String, Integer>>> requestedCorpus = null ;
         if (scanType.equals(ScanType.WEB)){
             requestedCorpus = webCorpuses;
-        }
+        }else
         if (scanType.equals(ScanType.FILE)){
             requestedCorpus = fileCorpuses;
         }
-        if(requestedCorpus.containsKey(query))
+
+        if(requestedCorpus.containsKey(splittedQuery[1].trim()))
         {
-            if(requestedCorpus.get(query).isDone()) {
+            if(requestedCorpus.get(splittedQuery[1].trim()).isDone()) {
                 try {
-                    return requestedCorpus.get(query).get();
+                    return requestedCorpus.get(splittedQuery[1].trim()).get();
                 } catch (InterruptedException e) {
 
                 } catch (ExecutionException e) {
 
                 }
             }
-            System.out.println("Error : "+query +" is not yet ready, try again later");
+            System.out.println("Error : "+splittedQuery[1].trim() +" is not yet ready, try again later");
         }
         else
-            System.out.println("Error : "+query+" does not exist in the corpuses");
+            System.out.println("Error : "+splittedQuery[1].trim()+" does not exist in the corpuses");
         return null;
     }
 
@@ -94,7 +99,7 @@ public class ResultRetrieverImpl implements ResultRetriever{
         }
         if(summaryType.equals(ScanType.WEB)) {
             try {
-                if(webSummary.isDone()&&webSummary!=null){
+                if(webSummary!=null&&webSummary.isDone()){
                     webSummary.get().clear();
                     webSummary = null;
                     System.out.println("Success: Web summary has been cleared");
@@ -124,7 +129,16 @@ public class ResultRetrieverImpl implements ResultRetriever{
             }
             else {
                 try {
-                    return Main.resultRetrieverThreadPool.submit(new fileSummaryWorker(fileCorpuses)).get();
+                    if(!fileCorpuses.isEmpty()){
+                        fileSummary = Main.resultRetrieverThreadPool.submit(new fileSummaryWorker(fileCorpuses));
+                        return fileSummary.get();
+                    }
+
+                    else
+                    {
+                        System.out.println("Can't start summary because corpuses is empty");
+                        return null;
+                    }
                 } catch (InterruptedException e) {
 
                 } catch (ExecutionException e) {
@@ -144,7 +158,16 @@ public class ResultRetrieverImpl implements ResultRetriever{
             }
             else {
                 try {
-                    return Main.resultRetrieverThreadPool.submit(new webSummaryWorker(webCorpuses)).get();
+                    if (!webCorpuses.isEmpty()){
+                        webSummary = Main.resultRetrieverThreadPool.submit(new webSummaryWorker(webCorpuses));
+                        return webSummary.get();
+                    }
+
+                    else
+                    {
+                        System.out.println("Can't start summary because corpuses is empty");
+                        return null;
+                    }
                 } catch (InterruptedException e) {
                         e.printStackTrace();
                 } catch (ExecutionException e) {
@@ -160,8 +183,6 @@ public class ResultRetrieverImpl implements ResultRetriever{
     @Override
     public Map<String, Map<String, Integer>> querySummary(ScanType summaryType) {
         if (summaryType.equals(ScanType.FILE)) {
-
-
             if (fileSummary != null) {
                 if (fileSummary.isDone()) {
                     try {
@@ -175,9 +196,12 @@ public class ResultRetrieverImpl implements ResultRetriever{
                 System.out.println("Summary not yet done");
                 return null;
             } else {
-
-                fileSummary = Main.resultRetrieverThreadPool.submit(new fileSummaryWorker(fileCorpuses));
-                System.out.println("Summary not started calculating. Starting now...");
+                if (!fileCorpuses.isEmpty()) {
+                    fileSummary = Main.resultRetrieverThreadPool.submit(new fileSummaryWorker(fileCorpuses));
+                    System.out.println("Summary not started calculating. Starting now...");
+                }
+                else
+                    System.out.println("Summary not started calculating."+'\n'+"Can't start because corpus is empty");
                 return null;
             }
         }
@@ -198,9 +222,13 @@ public class ResultRetrieverImpl implements ResultRetriever{
                 return null;
 
             } else {
+                if (!webCorpuses.isEmpty()) {
+                    webSummary = Main.resultRetrieverThreadPool.submit(new webSummaryWorker(webCorpuses));
+                    System.out.println("Summary not started calculating. Starting now...");
+                }
+                else
+                    System.out.println("Summary not started calculating."+'\n'+"Can't start because corpus is empty");
 
-                webSummary = Main.resultRetrieverThreadPool.submit(new webSummaryWorker(webCorpuses));
-                System.out.println("Summary not started calculating. Starting now...");
                 return null;
             }
         }
@@ -231,11 +259,10 @@ public class ResultRetrieverImpl implements ResultRetriever{
         return webCorpuses.containsKey(url);
     }
 
-    public Map<String, Future<Map<String, Integer>>> getFileCorpuses() {
-        return fileCorpuses;
-    }
-
-    public Map<String, Future<Map<String, Integer>>> getWebCorpuses() {
-        return webCorpuses;
+    public void checkTimeForReset(){
+        if(System.currentTimeMillis()-resetTime>=PropertyConstants.url_refresh_time){
+            resetTime = System.currentTimeMillis();
+            webCorpuses.clear();
+        }
     }
 }

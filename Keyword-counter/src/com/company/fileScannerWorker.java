@@ -36,7 +36,7 @@ public class fileScannerWorker extends RecursiveTask<Map<String, Integer>> {
         int newStart = end+1;
         int thisThreadEnd = end;
         for (int i = start;i<=end;i++) {
-            if((corpus[i].isFile())&&(corpus[i].getName().endsWith(".txt"))) {
+            if((corpus[i].canRead())&&(corpus[i].isFile())&&(corpus[i].getName().endsWith(".txt"))) {
                 currentSum += corpus[i].length();
                 if (currentSum >= PropertyConstants.file_scanning_size_limit) {
                     newStart = i + 1;
@@ -57,7 +57,7 @@ public class fileScannerWorker extends RecursiveTask<Map<String, Integer>> {
 
     private Map<String, Integer> calculate(int end)  {
         for(int j = start;j<=end;j++){
-            if(corpus[j].isFile()&&corpus[j].getName().endsWith(".txt"))
+            if((corpus[j].canRead())&&corpus[j].isFile()&&corpus[j].getName().endsWith(".txt"))
             {
                 Scanner file= null;
                 try {
@@ -77,6 +77,8 @@ public class fileScannerWorker extends RecursiveTask<Map<String, Integer>> {
                 }
 
             }
+            else
+                System.out.println("File " + "'"+corpus[j].getName()+"'" + " is not readable");
         }
         return result;
     }

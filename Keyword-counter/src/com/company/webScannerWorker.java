@@ -38,6 +38,7 @@ public class webScannerWorker implements Callable<Map<String,Integer>> {
             System.out.println("Site unreachable: "+query);
             return result;
         }
+        ((ResultRetrieverImpl)Main.resultRetriever).checkTimeForReset();
         if(hopsLeft!=0)
         {
             Elements links = doc.select("a[href]");

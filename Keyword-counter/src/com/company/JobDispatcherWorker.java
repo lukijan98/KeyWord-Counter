@@ -11,6 +11,8 @@ public class JobDispatcherWorker implements Runnable {
         {
             try {
                 ScanningJob job = Main.jobQueue.take();
+                if(((JobObject)job).isPoison())
+                    break;
                 if(job.getType().equals(ScanType.WEB))
                 {
                     if(!((ResultRetrieverImpl)Main.resultRetriever).isUrlInCorpus(job.getQuery()))

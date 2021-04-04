@@ -7,11 +7,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class DirectoryCrawlerWorker implements Runnable {
 
     private HashMap<File,Long> filesLastModifedMap;
-    private LinkedBlockingQueue<String> pathsToScan;
+    private LinkedBlockingQueue<CrawlerObject> pathsToScan;
+    private boolean shutdown;
 
-    public DirectoryCrawlerWorker(LinkedBlockingQueue<String> pathsToScan) {
+    public DirectoryCrawlerWorker(LinkedBlockingQueue<CrawlerObject> pathsToScan) {
         this.filesLastModifedMap = new HashMap<>();
         this.pathsToScan = pathsToScan;
+        this.shutdown = false;
     }
 
     @Override
@@ -23,15 +25,28 @@ public class DirectoryCrawlerWorker implements Runnable {
                 int numberOfPaths = pathsToScan.size();
                 for (int i = 0; i < numberOfPaths; i++)
                 {
-                    String path = pathsToScan.poll();
+                    CrawlerObject crawlerObject = pathsToScan.poll();
+                    if(crawlerObject.isPoison())
+                    {
+                        shutdown = true;
+                        break;
+                    }
+                    String path = crawlerObject.getPath();
                     File directory = new File(path);
+                    if(!directory.exists())
+                    {
+                        System.out.println("Error: Path " + "'"+path+"' "+"does not exist");
+                        continue;
+                    }
                     try {
                         crawlDirectories(directory);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    pathsToScan.add(path);
+                    pathsToScan.add(crawlerObject);
                 }
+                if(shutdown)
+                    break;
             }
             try {
                 Thread.sleep(PropertyConstants.dir_crawler_sleep_time);

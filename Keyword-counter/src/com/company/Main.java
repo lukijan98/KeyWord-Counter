@@ -1,8 +1,8 @@
 package com.company;
-
-
 import java.io.File;
+import java.net.URL;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.*;
 
 public class Main {
@@ -21,76 +21,121 @@ public class Main {
         resultRetriever = new ResultRetrieverImpl();
     }
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-
-        File directoryPath = new File("example");
-        LinkedBlockingQueue<String> pathsToScan = new LinkedBlockingQueue<>();
-        //pathsToScan.add("example");
-        jobQueue.put(new JobObject("https://www.gatesnotes.com/2019-Annual-Letter",PropertyConstants.hop_count));
+    public static void main(String[] args) throws  InterruptedException {
+        File f= new File("asd");
+        if(f.exists())
+            System.out.println("postoji");
+        LinkedBlockingQueue<CrawlerObject> pathsToScan = new LinkedBlockingQueue<>();
         Thread jobDispatcher = new Thread(new JobDispatcherWorker());
         jobDispatcher.start();
         Thread directoryCrawler = new Thread(new DirectoryCrawlerWorker(pathsToScan));
         directoryCrawler.start();
-//        fileScannerWorker fsw = new fileScannerWorker(directoryPath.listFiles(),0,directoryPath.listFiles().length-1);
-//        Future<Map<String,Integer>> mapa1 = fileScannerThreadPool.submit(fsw);
-//        Thread.sleep(5000);
-//        Map<String,Integer> mapa  =resultRetriever.getResult("WEB|https://www.msn.com/en-us/lifestyle/horoscope");
-//        for( Map.Entry<String, Integer> entry : mapa.entrySet() ){
-//            System.out.println( entry.getKey() + " => " + entry.getValue() );
-//        }
-       // Map<String, Map<String, Integer>> mapa4  =resultRetriever.querySummary(ScanType.WEB);
-        Thread.sleep(5000);
-        Map<String, Map<String, Integer>> mapa1  =resultRetriever.getSummary(ScanType.WEB);
-        for( Map.Entry<String, Map<String, Integer>> entry : mapa1.entrySet() ){
-            System.out.println( entry.getKey() );
-            for( Map.Entry<String, Integer> entry1 : entry.getValue().entrySet() ){
-                System.out.println( entry1.getKey() + " => " + entry1.getValue());
+        Scanner sc = new Scanner(System.in);
+        while(true){
+            String line = sc.nextLine().trim();
+            if(line.equals("stop")){
+                pathsToScan.put(new CrawlerObject());
+                System.out.println("Shutting down Directory Crawler");
+                jobQueue.put(new JobObject());
+                System.out.println("Shutting down Job Queue");
+                fileScannerThreadPool.shutdown();
+                System.out.println("Shutting down File Scanner");
+                webScannerThreadPool.shutdown();
+                System.out.println("Shutting down Web Scanner");
+                resultRetrieverThreadPool.shutdown();
+                System.out.println("Shutting down Result Retriever");
+                while((!fileScannerThreadPool.isTerminated())||(!webScannerThreadPool.isTerminated())||
+                        (!resultRetrieverThreadPool.isTerminated()));
+                System.out.println("Program has ended");
+                break;
+            }else
+            if(line.equals("cfs"))
+                resultRetriever.clearSummary(ScanType.FILE);
+            else if(line.equals("cws"))
+                resultRetriever.clearSummary(ScanType.WEB);
+            else if(line.startsWith("aw ")){
+                line = line.substring(3).trim();
+                if(isValidURL(line))
+                    jobQueue.put(new JobObject(line,PropertyConstants.hop_count));
+                else
+                    System.out.println("Error: Invalid url '"+line+"'");
+            }else if(line.startsWith("ad ")){
+                line = line.substring(3).trim();
+                pathsToScan.put(new CrawlerObject(line));
+            }else if(line.startsWith("query ")){
+                line = line.substring(6).trim();
+                String[] splittedQuery = line.split("\\|");
+                ScanType scanType = null;
+                try {
+                    scanType = ScanType.valueOf(splittedQuery[0].trim().toUpperCase());
+                    if(!(splittedQuery[1].trim().equals("summary"))){
+                        Map<String, Integer> result = resultRetriever.queryResult(line);
+                        if(result!=null)
+                            printResult(result);
+                    }else
+                    {
+                        Map<String, Map<String, Integer>> result = resultRetriever.querySummary(scanType);
+                        if (result != null)
+                            printSummaryResult(result);
+                    }
+                }catch (Exception e){
+                    System.out.println("Error: Unsupported Scan type");
+                }
+            }else if(line.startsWith("get ")){
+                line = line.substring(4).trim();
+                String[] splittedQuery = line.split("\\|");
+                ScanType scanType = null;
+                try {
+                    scanType = ScanType.valueOf(splittedQuery[0].trim().toUpperCase());
+                    if(!(splittedQuery[1].trim().equals("summary"))){
+                        Map<String, Integer> result = resultRetriever.getResult(line);
+                        if(result!=null)
+                            printResult(result);
+                    }else
+                    {
+                        Map<String, Map<String, Integer>> result = resultRetriever.getSummary(scanType);
+                        if (result != null)
+                            printSummaryResult(result);
+                    }
+                }catch (Exception e){
+                    System.out.println("Error: Unsupported Scan type");
+                }
             }
-        }
-//        System.out.println(fileScannerThreadPool.getStealCount());
-//        Thread.sleep(15000);
-//        webScannerThreadPool.shutdown();
-//        fileScannerThreadPool.shutdown();
-//        for(String s:PropertyConstants.keywords)
-//            System.out.println(s);
-//        //System.out.println(keywords[2]);
-//        System.out.println(PropertyConstants.file_corpus_prefix);
-        //File directoryPath = new File("example");
-//        LinkedBlockingQueue<String> queue1 = new LinkedBlockingQueue<String>();
-//        LinkedBlockingQueue<String> queue2 = new LinkedBlockingQueue<String>();
-//        Thread t1 = new Thread(new DirectoryCrawlerWorker(queue1));
-//        Thread t2 = new Thread(new DirectoryCrawlerWorker(queue2));
-//        t1.start();
-//        t2.start();
-//        queue1.add("example/data");
-//        queue2.add("example/data2");
+            else
+                System.out.println("Error: Unsupported command '"+line+"'");
 
-       // System.out.println(directoryPath.lastModified());
-        //Thread.sleep(12000);
-        //System.out.println(directoryPath.lastModified());
-       // File a = new File("example/data/corpus_riker/text1.txt");
-        //System.out.println(directoryPath.lastModified()==a.lastModified());
-       // System.out.println(directoryPath.equals(a));
-        //crawlDirectories(directoryPath);
+
+        }
+        sc.close();
 
     }
-//    public static void crawlDirectories(File file){
-//        if(file.isDirectory())
-//        {
-//            if(file.getName().startsWith("corpus_"))
-//            {
-//                System.out.println(file.getName());
-//                return;
-//            }
-//            else
-//            {
-//                File[] files = file.listFiles();
-//                for(File f:files)
-//                {
-//                    crawlDirectories(f);
-//                }
-//            }
-//        }
-//    }
+    public static void printResult(Map<String, Integer> result){
+        String resultString = "{";
+        for( Map.Entry<String, Integer> entry : result.entrySet() ){
+            resultString+=(entry.getKey() + '=' + entry.getValue()+',');
+        }
+        System.out.println(resultString.substring(0,resultString.length()-1)+"}");
+    }
+
+    public static void printSummaryResult(Map<String, Map<String, Integer>> result){
+        for( Map.Entry<String, Map<String, Integer>> entry : result.entrySet() ){
+            String resultString = entry.getKey()+"  {";
+            for( Map.Entry<String, Integer> entry1 : entry.getValue().entrySet() ){
+                resultString+=(entry1.getKey() + '=' + entry1.getValue()+',');
+            }
+            System.out.println(resultString.substring(0,resultString.length()-1)+"}");
+        }
+    }
+
+    public static boolean isValidURL(String url)
+    {
+        try {
+            new URL(url).toURI();
+            return true;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
 
 }

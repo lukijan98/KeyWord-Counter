@@ -16,11 +16,17 @@ public class JobObject implements ScanningJob{
         this.type = ScanType.WEB;
         this.url = url;
         this.jumpsLeft = jumpsLeft;
+        this.poison = false;
     }
 
     public JobObject(File corpus){
         this.type = ScanType.FILE;
         this.corpus = corpus;
+        this.poison = false;
+    }
+
+    public JobObject(){
+        this.poison = true;
     }
 
     @Override
@@ -47,7 +53,7 @@ public class JobObject implements ScanningJob{
         return null;
     }
 
-    private boolean testQuery(){
-        return true;
+    public boolean isPoison() {
+        return poison;
     }
 }

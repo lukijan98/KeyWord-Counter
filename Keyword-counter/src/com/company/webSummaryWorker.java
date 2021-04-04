@@ -40,7 +40,7 @@ public class webSummaryWorker implements Callable<Map<String, Map<String, Intege
         return result;
     }
 
-    public String getDomainName(String url) throws URISyntaxException, URISyntaxException {
+    public String getDomainName(String url) throws URISyntaxException {
         URI uri = new URI(url);
         String domain = uri.getHost();
         return domain.startsWith("www.") ? domain.substring(4) : domain;
