@@ -1,4 +1,4 @@
-package com.company;
+package ResultRetriever;
 
 import java.net.URI;
 import java.net.URISyntaxException;

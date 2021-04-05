@@ -1,4 +1,4 @@
-package com.company;
+package MainCLI;
 
 import java.io.FileReader;
 import java.io.IOException;

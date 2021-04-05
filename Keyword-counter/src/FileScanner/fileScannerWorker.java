@@ -1,4 +1,6 @@
-package com.company;
+package FileScanner;
+
+import MainCLI.PropertyConstants;
 
 import java.io.File;
 import java.io.FileNotFoundException;

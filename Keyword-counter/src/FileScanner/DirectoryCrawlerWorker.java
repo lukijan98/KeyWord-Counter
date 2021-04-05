@@ -1,4 +1,8 @@
-package com.company;
+package FileScanner;
+
+import Job.JobObject;
+import MainCLI.Main;
+import MainCLI.PropertyConstants;
 
 import java.io.File;
 import java.util.HashMap;

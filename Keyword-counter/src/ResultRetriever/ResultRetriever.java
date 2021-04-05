@@ -1,7 +1,8 @@
-package com.company;
+package ResultRetriever;
+
+import Job.ScanType;
 
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 public interface ResultRetriever {

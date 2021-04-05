@@ -1,4 +1,4 @@
-package com.company;
+package Job;
 
 public enum ScanType {
     FILE,

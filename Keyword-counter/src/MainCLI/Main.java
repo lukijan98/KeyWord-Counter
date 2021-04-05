@@ -1,4 +1,14 @@
-package com.company;
+package MainCLI;
+import FileScanner.CrawlerObject;
+import FileScanner.DirectoryCrawlerWorker;
+import Job.JobDispatcherWorker;
+import Job.JobObject;
+import Job.ScanType;
+import Job.ScanningJob;
+import ResultRetriever.ResultRetriever;
+import ResultRetriever.ResultRetrieverImpl;
+
+
 import java.io.File;
 import java.net.URL;
 import java.util.Map;

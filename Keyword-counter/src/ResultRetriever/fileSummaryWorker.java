@@ -1,4 +1,4 @@
-package com.company;
+package ResultRetriever;
 
 import java.util.Map;
 import java.util.concurrent.Callable;

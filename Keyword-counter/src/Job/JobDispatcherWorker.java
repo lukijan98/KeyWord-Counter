@@ -1,5 +1,8 @@
-package com.company;
+package Job;
 
+
+import MainCLI.Main;
+import ResultRetriever.ResultRetrieverImpl;
 
 public class JobDispatcherWorker implements Runnable {
 

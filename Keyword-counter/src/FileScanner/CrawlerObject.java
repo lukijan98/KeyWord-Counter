@@ -1,4 +1,4 @@
-package com.company;
+package FileScanner;
 
 public class CrawlerObject {
     private boolean poison;

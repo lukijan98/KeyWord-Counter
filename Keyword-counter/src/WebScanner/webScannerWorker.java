@@ -1,6 +1,10 @@
-package com.company;
+package WebScanner;
 
 
+import Job.JobObject;
+import MainCLI.Main;
+import MainCLI.PropertyConstants;
+import ResultRetriever.ResultRetrieverImpl;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -38,7 +42,7 @@ public class webScannerWorker implements Callable<Map<String,Integer>> {
             System.out.println("Site unreachable: "+query);
             return result;
         }
-        ((ResultRetrieverImpl)Main.resultRetriever).checkTimeForReset();
+        ((ResultRetrieverImpl) Main.resultRetriever).checkTimeForReset();
         if(hopsLeft!=0)
         {
             Elements links = doc.select("a[href]");

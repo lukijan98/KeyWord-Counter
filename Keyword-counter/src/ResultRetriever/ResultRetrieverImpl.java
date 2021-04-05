@@ -1,4 +1,7 @@
-package com.company;
+package ResultRetriever;
+
+import Job.ScanType;
+import MainCLI.*;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -260,7 +263,7 @@ public class ResultRetrieverImpl implements ResultRetriever{
     }
 
     public void checkTimeForReset(){
-        if(System.currentTimeMillis()-resetTime>=PropertyConstants.url_refresh_time){
+        if(System.currentTimeMillis()-resetTime>= PropertyConstants.url_refresh_time){
             resetTime = System.currentTimeMillis();
             webCorpuses.clear();
         }

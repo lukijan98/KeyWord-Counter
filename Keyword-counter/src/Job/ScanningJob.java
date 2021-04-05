@@ -1,4 +1,4 @@
-package com.company;
+package Job;
 
 import java.util.Map;
 import java.util.concurrent.Future;

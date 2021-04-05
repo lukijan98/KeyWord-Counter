@@ -1,10 +1,14 @@
-package com.company;
+package Job;
+
+import FileScanner.fileScannerWorker;
+import MainCLI.*;
+import WebScanner.webScannerWorker;
 
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-public class JobObject implements ScanningJob{
+public class JobObject implements ScanningJob {
 
     private ScanType type;
     private String url;
