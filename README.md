@@ -223,13 +223,13 @@ Stopping...
 Example 2: adding a web page to tour and read web summary results.
 
 **aw https://www.gatesnotes.com/2019-Annual-Letter** \
-Starting web scan for web|https://www.gatesnotes.com/2019-Annual-Letter\
-Starting web scan for web|https://www.gatesnotes.com/\
-Starting web scan for web|https://www.gatesnotes.com/Books\
+Starting web scan for web|https://www.gatesnotes.com/2019-Annual-Letter \
+Starting web scan for web|https://www.gatesnotes.com/ \
+Starting web scan for web|https://www.gatesnotes.com/Books\ \
 ...\
-Starting web scan for web|https://blog.23andme.com/23andme-research/new-study-finds-genetic-links-risk-premature-births/\
-Starting web scan for web|https://www.wired.com/story/wired25-bill-gates-stephen-quake-blood-tests/\
-**query web|summary**
+Starting web scan for web|https://blog.23andme.com/23andme-research/new-study-finds-genetic-links-risk-premature-births/ \
+Starting web scan for web|https://www.wired.com/story/wired25-bill-gates-stephen-quake-blood-tests/ \
+**query web|summary**\
 Summary is not ready yet\
 **get web|summary**\
 wired.com: {one=0, two=1, three=0}\
