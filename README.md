@@ -40,6 +40,7 @@ After crawling the specified directories, the directory crawler pauses for a whi
 
 A job queue is a shared blocking line that contains job descriptions that need to be started. One job could (but does not have to) be described with the following interface: 
 
+```
 public interface ScanningJob {
 
 	ScanType getType();
@@ -49,6 +50,7 @@ public interface ScanningJob {
 	Future<Map<String, Integer>> initiate();	
   
 }
+```
 
 Where ScanType is an enumeration (FILE / WEB) that specifies the type of job, query is a query that will retrieve the results of this job via the CLI, and initiate is the method that will start the job within the appropriate thread pool. The result of the initiate () method is a Future object that represents a count job for that corpus, and the result is a map that has exactly as many keys as there are keywords, and the number of occurrences associated with each corpus in that corpus.
 The idea is that any component can write to this line, but currently these are Main / CLI (when starting the count for the Web corpus), Directory crawler (when starting the count for the text corpus) and Web scanner (when it finds a new URL within the HTML code ). This queue reads only the Job dispatcher component.
@@ -108,6 +110,7 @@ Result retriever should also provide operations to delete certain stored results
      
 The result retriever component could (but does not have to) be described by the following interface:
 
+```
 public interface ResultRetriever {
 
 	public Map<String, Integer> getResult(String query);
@@ -123,6 +126,7 @@ public interface ResultRetriever {
 	public void addCorpusResult(String corpusName, Future<Map<String, Integer>> corpusResult);
   
 }
+```
 
 ### 2.6 Main/CLI thread
 
